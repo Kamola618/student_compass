@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grades — Student Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FBF3E7;
+    --paper-card: #FFFFFF;
+    --burgundy: #6B1E3C;
+    --burgundy-deep: #4A1633;
+    --burgundy-wash: rgba(107,30,60,0.06);
+    --ink-text: #2E1620;
+    --muted: #9C8089;
+    --hairline: rgba(107,30,60,0.12);
+    --radius: 16px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink-text);
+    font-family: 'Inter', sans-serif;
+    padding: 56px 48px 80px;
+    min-height: 100vh;
+  }
+  .page{ max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 10px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 36px;
+    color: var(--burgundy-deep);
+    margin-bottom: 8px;
+  }
+  .page-sub{
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .scale-table{
+    max-width: 480px;
+    background: var(--paper-card);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 22px 26px 10px;
+    margin-bottom: 40px;
+  }
+  table.scale{
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+  }
+  table.scale th{
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--burgundy);
+    font-weight: 700;
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  table.scale td{
+    padding: 10px;
+    border-bottom: 1px dotted var(--hairline);
+    color: var(--ink-text);
+    font-weight: 500;
+  }
+  table.scale tr:last-child td{ border-bottom: none; }
+  table.scale td.letter{
+    color: var(--burgundy);
+    font-weight: 700;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+  }
+
+  .course-card{
+    background: var(--paper-card);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 20px rgba(74,22,51,0.06);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+  }
+  .course-head{
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+  .course-name{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink-text);
+  }
+  .course-term{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+  }
+
+  /* dynamic assessment grid: as many columns as assessments */
+  .assess-grid{
+    display:grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 1px;
+    background: var(--hairline);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 640px){
+    .assess-grid{ grid-auto-flow: row; }
+  }
+  .assess-cell{
+    background: var(--burgundy-wash);
+    padding: 14px 16px;
+  }
+  .assess-label{
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--burgundy-deep);
+    margin-bottom: 8px;
+  }
+  .assess-score-row{
+    display:flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .inline-score{
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink-text);
+    width: 48px;
+    padding: 0 0 1px;
+  }
+  .inline-score:focus{
+    outline: none;
+    border-bottom-color: var(--burgundy);
+  }
+  .inline-score:disabled{
+    color: var(--muted);
+  }
+  .assess-score-suffix{ font-size: 12px; color: var(--muted); }
+  .assess-weight{
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-text);
+    opacity: 0.65;
+  }
+
+  hr.divider{
+    border: none;
+    border-top: 1px solid var(--hairline);
+    margin: 20px 0;
+  }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 640px){
+    .summary-grid{ grid-template-columns: 1fr; }
+  }
+  .summary-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .summary-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--burgundy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .summary-value span{ font-size: 16px; color: var(--muted); font-weight: 400; }
+  .summary-meta{
+    font-size: 13px;
+    color: var(--ink-text);
+  }
+  .progress-track{
+    height: 6px;
+    border-radius: 999px;
+    background: var(--burgundy-wash);
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .progress-fill{
+    height: 100%;
+    border-radius: 999px;
+    background: var(--burgundy);
+  }
+
+  .calc-row{
+    display:flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .calc-field{ flex: 0 0 120px; }
+  .calc-field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .calc-field input{
+    width: 100%;
+    font-family:'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--burgundy);
+    border: none;
+    border-bottom: 2px solid var(--hairline);
+    background: transparent;
+    padding: 4px 0 8px;
+  }
+  .calc-field input:focus{
+    outline: none;
+    border-bottom-color: var(--burgundy);
+  }
+  .calc-row button{
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .calc-row button:hover{ background: var(--burgundy-deep); }
+
+  .calc-result{
+    margin-top: 14px;
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--burgundy-wash);
+    color: var(--burgundy-deep);
+  }
+  .calc-result strong{ font-family:'IBM Plex Mono', monospace; }
+
+  .save-bar{
+    margin-top: 36px;
+  }
+  .save-bar button{
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 13px 24px;
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .assess-score-input{
+    width: 46px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink-text);
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    padding: 0;
+  }
+  .assess-score-input:focus{
+    outline: none;
+    border-bottom-color: var(--burgundy);
+  }
+  .assess-score-input:disabled{
+    color: var(--muted);
+  }
+  .save-row{
+    display:flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .save-row button{
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .save-row button:hover{ background: var(--burgundy-deep); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="eyebrow">Fall 2026</div>
+  <h1>Grades</h1>
+  <p class="page-sub">Track your current grades and see what you need to reach your target.</p>
+
+  <div class="section-label">Grading scale</div>
+  <div class="scale-table">
+    <table class="scale">
+      <tr><th>Points</th><th>Letter</th><th>GPA</th></tr>
+      <tr><td>93 – 100</td><td class="letter">A+</td><td>4.5</td></tr>
+      <tr><td>85 – 92.99</td><td class="letter">A</td><td>4.0</td></tr>
+      <tr><td>75 – 84.99</td><td class="letter">B+</td><td>3.5</td></tr>
+      <tr><td>65 – 74.99</td><td class="letter">B</td><td>3.0</td></tr>
+      <tr><td>60 – 64.99</td><td class="letter">C+</td><td>2.75</td></tr>
+      <tr><td>50 – 59.99</td><td class="letter">C</td><td>2.5</td></tr>
+      <tr><td>40 – 49.99</td><td class="letter">D</td><td>2.0</td></tr>
+      <tr><td>0 – 39.99</td><td class="letter">F</td><td>0</td></tr>
+    </table>
+  </div>
+
+  <div class="section-label">My courses</div>
+
+  <form method="post">
+    {% csrf_token %}
+    {% for r in results %}
+      <div class="course-card">
+        <div class="course-head">
+          <div class="course-name">{{ r.course.name }}</div>
+          <div class="course-term">{{ r.course.semester.name }}</div>
+        </div>
+
+        <div class="assess-grid">
+          {% for row in r.rows %}
+            <div class="assess-cell">
+              <div class="assess-label">{{ row.assessment.name }}</div>
+              <div class="assess-score-row">
+                {% if row.assessment.auto_calculated %}
+                  <span class="inline-score" style="border:none;">{{ row.score|floatformat:0 }}</span>
+                {% else %}
+                  <input
+                    type="number" step="1" min="0" max="100"
+                    class="inline-score"
+                    name="score_{{ row.grade.id }}"
+                    value="{{ row.score|default_if_none:'' }}"
+                    placeholder="—">
+                {% endif %}
+                <span class="assess-score-suffix">/ 100</span>
+              </div>
+              <div class="assess-weight">{{ row.assessment.weight }}% weight</div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <hr class="divider">
+
+        <div class="summary-grid">
+          <div>
+            <div class="summary-label">Current grade</div>
+            <div class="summary-value">{{ r.total }}<span> / 100</span></div>
+            <div class="summary-meta">{{ r.letter }} · {{ r.gpa }} GPA</div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: {{ r.total }}%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="summary-label">Target grade</div>
+            <div class="calc-row">
+              <div class="calc-field">
+                <label for="target_{{ r.course.id }}">Target</label>
+                <input type="number" step="0.1" id="target_{{ r.course.id }}" name="target_{{ r.course.id }}" value="{{ r.target_raw }}" placeholder="70">
+              </div>
+              <button type="submit">Save &amp; calculate</button>
+            </div>
+
+            <div class="calc-result">
+              {% if r.status.status == 'reached' %}
+                Target reached.
+              {% elif r.status.status == 'needed' %}
+                You need <strong>{{ r.status.value }}</strong> on the remaining assessments to reach your target.
+              {% elif r.status.reason == 'all_done' %}
+                All assessments are recorded and the target wasn't reached this time.
+              {% elif r.status.status == 'unreachable' and r.status.value %}
+                Target is not reachable — would need {{ r.status.value }}, above 100.
+              {% else %}
+                Set a target above and save to calculate.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="empty-state">No courses yet. Add some from the Courses page.</p>
+    {% endfor %}
+
+    <div class="save-bar">
+      <button type="submit">Save all grades</button>
+    </div>
+  </form>
+
+</div>
+</body>
+</html>

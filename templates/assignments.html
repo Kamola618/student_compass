@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assignments — Student Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FBF3E7;
+    --paper-card: #FFFFFF;
+    --burgundy: #6B1E3C;
+    --burgundy-deep: #4A1633;
+    --ink-text: #2E1620;
+    --muted: #9C8089;
+    --gold: #C9922E;
+    --sage: #4F8C7A;
+    --terracotta: #C1553A;
+    --radius: 14px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink-text);
+    font-family: 'Inter', sans-serif;
+    padding: 48px;
+    min-height: 100vh;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--burgundy-deep);
+    margin-bottom: 24px;
+  }
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--burgundy);
+    margin: 32px 0 14px;
+  }
+  .section-label:first-of-type{ margin-top: 0; }
+  .assignment-list{
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 720px;
+  }
+  .assignment-card{
+    background: var(--paper-card);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    border: 1px solid rgba(107,30,60,0.08);
+    box-shadow: 0 4px 14px rgba(74,22,51,0.07);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 20px;
+    align-items: center;
+  }
+  .assignment-card.completed{
+    opacity: 0.6;
+    filter: grayscale(0.4);
+    transition: opacity 0.15s ease;
+  }
+  .assignment-card.completed:hover{ opacity: 0.9; }
+
+  .a-top{
+    grid-column: 1 / 2;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .a-name{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .a-course{
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: white;
+  }
+  .a-priority{
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: white;
+    justify-self: end;
+  }
+  .priority-high{ background: var(--terracotta); }
+  .priority-med{ background: var(--gold); }
+  .priority-low{ background: var(--sage); }
+
+  .a-meta{
+    grid-column: 1 / 2;
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    font-size: 13px;
+    color: #7A6169;
+  }
+  .a-due{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .a-stars{ color: var(--gold); letter-spacing: 1px; font-size: 13px; }
+
+  .a-progress-wrap{
+    grid-column: 1 / 3;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .a-progress-track{
+    flex:1;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(107,30,60,0.08);
+    overflow: hidden;
+  }
+  .a-progress-fill{
+    height: 100%;
+    border-radius: 999px;
+    background: var(--burgundy);
+  }
+  .a-progress-pct{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 34px;
+    text-align: right;
+  }
+
+  .score-box{
+    grid-column: 1 / 3;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .inline-score{
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink-text);
+    width: 48px;
+    padding: 0 0 1px;
+  }
+  .inline-score:focus{
+    outline: none;
+    border-bottom-color: var(--burgundy);
+  }
+
+  .save-scores{
+    margin-top: 20px;
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .save-scores:hover{ background: var(--burgundy-deep); }
+
+  .empty-state{
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow">Fall 2026</div>
+  <h1>Assignments</h1>
+  <a href="{% url 'add_assignment' %}" style="display:inline-block; margin-bottom:24px; background: var(--burgundy); color:white; text-decoration:none; padding:10px 18px; border-radius:8px; font-family:'Inter',sans-serif; font-weight:600; font-size:14px;">+ Add Assignment</a>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="section-label">Upcoming</div>
+    <div class="assignment-list">
+      {% for a in upcoming %}
+        <div class="assignment-card">
+          <div class="a-top">
+            <span class="a-course" style="background: {{ a.course.color }}">{{ a.course.code }}</span>
+            <span class="a-name">{{ a.name }}</span>
+          </div>
+          <span class="a-priority priority-{{ a.priority }}">{{ a.priority }}</span>
+
+          <div class="a-meta">
+            <span class="a-due">Due {{ a.due_date|date:"M d, H:i" }}</span>
+            <span class="a-stars">{% for i in "12345" %}{% if forloop.counter <= a.difficulty %}★{% else %}☆{% endif %}{% endfor %}</span>
+          </div>
+
+          <div class="a-progress-wrap">
+            <div class="a-progress-track">
+              <div class="a-progress-fill" style="width: {{ a.progress }}%"></div>
+            </div>
+            <span class="a-progress-pct">{{ a.progress }}%</span>
+          </div>
+        </div>
+      {% empty %}
+        <p class="empty-state">Nothing upcoming — you're clear for now.</p>
+      {% endfor %}
+    </div>
+
+    <div class="section-label">Completed</div>
+    <div class="assignment-list">
+      {% for a in completed %}
+        <div class="assignment-card completed">
+          <div class="a-top">
+            <span class="a-course" style="background: {{ a.course.color }}">{{ a.course.code }}</span>
+            <span class="a-name">{{ a.name }}</span>
+          </div>
+          <span class="a-priority priority-{{ a.priority }}">{{ a.priority }}</span>
+
+          <div class="a-meta">
+            <span class="a-due">Was due {{ a.due_date|date:"M d, H:i" }}</span>
+          </div>
+
+          <div class="score-box">
+            Score:
+            <input type="number" step="1" min="0" max="100" class="inline-score"
+                   name="score_{{ a.id }}" value="{{ a.score|default_if_none:'' }}" placeholder="—">
+            / 100
+          </div>
+        </div>
+      {% empty %}
+        <p class="empty-state">Nothing completed yet.</p>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="save-scores">Save scores</button>
+  </form>
+
+</body>
+</html>

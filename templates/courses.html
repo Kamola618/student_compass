@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses — Student Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #FBF3E7;
+    --paper-card: #FFFFFF;
+    --burgundy: #6B1E3C;
+    --burgundy-deep: #4A1633;
+    --ink-text: #2E1620;
+    --muted: #9C8089;
+    --radius: 14px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink-text);
+    font-family: 'Inter', sans-serif;
+    padding: 48px;
+    min-height: 100vh;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--burgundy-deep);
+    margin-bottom: 32px;
+  }
+  .course-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .course-card{
+    background: var(--paper-card);
+    color: var(--ink-text);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid rgba(107,30,60,0.08);
+    box-shadow: 0 4px 14px rgba(74,22,51,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .course-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(74,22,51,0.14);
+  }
+  .course-tag{
+    display:inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .course-name{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .course-meta{
+    font-size: 13px;
+    color: #7A6169;
+    line-height: 1.6;
+  }
+  .course-meta strong{ color: var(--ink-text); }
+  .empty-state{
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow">Fall 2026</div>
+  <h1>Your Courses</h1>
+  <a href="{% url 'add_course' %}" style="display:inline-block; margin-bottom:24px; background: var(--burgundy); color:white; text-decoration:none; padding:10px 18px; border-radius:8px; font-family:'Inter',sans-serif; font-weight:600; font-size:14px;">+ Add Course</a>
+
+  <div class="course-grid">
+    {% for course in courses %}
+      <div class="course-card">
+        <span class="course-tag" style="background: {{ course.color }}">{{ course.code }}</span>
+        <div class="course-name">{{ course.name }}</div>
+        <div class="course-meta">
+          <strong>{{ course.teacher }}</strong><br>
+          {{ course.office }} · {{ course.office_hours }}
+        </div>
+      </div>
+    {% empty %}
+      <p class="empty-state">No courses added yet. Add some in the admin panel.</p>
+    {% endfor %}
+  </div>
+
+</body>
+</html>
