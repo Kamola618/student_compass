@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment
+venv/
+.venv/
+.env
+
+# Django
+db.sqlite3
+db.sqlite3.backup-*
+/media/
+/staticfiles/
+
+# Tooling
+.playwright-mcp/
+*.png
+.idea/
+.pytest_cache/

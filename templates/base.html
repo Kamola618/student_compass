@@ -1,0 +1,31 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Student Compass{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/compass.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{% url 'dashboard' %}">Student&nbsp;Compass</a>
+  {% if user.is_authenticated %}
+    <nav class="nav">
+      <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Overview</a>
+      <a href="{% url 'courses' %}" {% if request.resolver_match.url_name == 'courses' %}aria-current="page"{% endif %}>Courses</a>
+      <a href="{% url 'grades' %}" {% if request.resolver_match.url_name == 'grades' %}aria-current="page"{% endif %}>Grades</a>
+      <a href="{% url 'tasks' %}" {% if request.resolver_match.url_name == 'tasks' %}aria-current="page"{% endif %}>Tasks</a>
+    </nav>
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+      <button class="btn ghost" type="submit">Sign out</button>
+    </form>
+  {% endif %}
+</header>
+<main class="shell">
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

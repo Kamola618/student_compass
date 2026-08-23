@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Overview — Student Compass{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h1>Overview</h1>
+    <p>{{ user.get_full_name|default:user.username }}{% if user.profile.group %} · {{ user.profile.group }}{% endif %}</p>
+  </div>
+</div>
+
+{% if enrollments %}
+  <div class="grid cols-3" style="margin-bottom:var(--s5)">
+    <div class="card">
+      <p class="label">Semester GPA</p>
+      <p class="metric">{{ semester_gpa|default:"—" }}</p>
+      <p class="small muted">Projected, credit-weighted</p>
+    </div>
+    <div class="card">
+      <p class="label">Courses</p>
+      <p class="metric">{{ enrollments|length }}</p>
+      <p class="small muted">Enrolled this semester</p>
+    </div>
+    <div class="card">
+      <p class="label">Open tasks</p>
+      <p class="metric">{{ open_tasks|length }}</p>
+      <p class="small muted">With a due date set</p>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <section class="card">
+      <div class="row" style="margin-bottom:var(--s4)">
+        <h2>Where you stand</h2>
+        <span class="small muted">projected</span>
+        <span class="spacer"></span>
+        <a class="small" href="{% url 'grades' %}">All grades</a>
+      </div>
+      <div class="stack">
+        {% for e in enrollments %}
+          <div>
+            <div class="row small">
+              <strong>{{ e.course.code }}</strong>
+              <span class="muted">{{ e.course.title }}</span>
+              <span class="spacer"></span>
+              {% if e.has_any_grade %}
+                <span class="mono">{{ e.projected_total }}</span>
+                <span class="pill">{{ e.projected_letter }}</span>
+              {% else %}
+                <span class="mono muted">—</span>
+                <span class="pill">not graded</span>
+              {% endif %}
+            </div>
+            <div class="meter" style="margin-top:var(--s2)"><span style="width:{% if e.has_any_grade %}{{ e.projected_total }}{% else %}0{% endif %}%"></span></div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row" style="margin-bottom:var(--s4)">
+        <h2>Due next</h2>
+        <span class="spacer"></span>
+        <a class="small" href="{% url 'tasks' %}">All tasks</a>
+      </div>
+      {% if open_tasks %}
+        <div class="stack">
+          {% for t in open_tasks %}
+            <div class="row small">
+              <span>{{ t.title }}</span>
+              {% if t.enrollment %}<span class="muted">{{ t.enrollment.course.code }}</span>{% endif %}
+              <span class="spacer"></span>
+              <span class="mono muted">{{ t.due_at|date:"j M" }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="small muted">Nothing scheduled. Enjoy it while it lasts.</p>
+      {% endif %}
+    </section>
+  </div>
+{% else %}
+  <div class="card empty">
+    <div class="mark">✳</div>
+    <h2>Let's set up your semester</h2>
+    <p>Add the courses you're taking and Compass will track where you stand — and tell you what you still need to hit the grade you're aiming for.</p>
+    <a class="btn" href="{% url 'add_course' %}">Add your first course</a>
+  </div>
+{% endif %}
+
+{% endblock %}

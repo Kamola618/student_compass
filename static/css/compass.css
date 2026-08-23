@@ -1,0 +1,215 @@
+/* Student Compass — design system
+ *
+ * Palette and type carried over from the original templates; the spacing and
+ * type scales are new. Every value below is a token: if a template hardcodes
+ * a colour or a pixel gap, that is a bug.
+ */
+
+:root {
+  /* Surface */
+  --paper: #FBF3E7;
+  --paper-card: #FFFFFF;
+  --paper-sunk: #F4E9DA;
+
+  /* Brand — one accent, used only for primary actions and active state */
+  --burgundy: #6B1E3C;
+  --burgundy-deep: #4A1633;
+  --burgundy-wash: rgba(107, 30, 60, 0.06);
+
+  /* Ink */
+  --ink: #2E1620;
+  --muted: #9C8089;
+  --hairline: rgba(107, 30, 60, 0.12);
+
+  /* Semantic — desaturated to sit inside a warm palette */
+  --ok: #3F6B4F;
+  --ok-wash: rgba(63, 107, 79, 0.10);
+  --warn: #9A6B24;
+  --warn-wash: rgba(154, 107, 36, 0.10);
+  --risk: #A33A3A;
+  --risk-wash: rgba(163, 58, 58, 0.10);
+
+  /* Spacing — 4px base. Nothing off this scale. */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+
+  /* Type — five sizes for the whole app */
+  --t-display: 2.25rem;
+  --t-title: 1.375rem;
+  --t-body: 0.9375rem;
+  --t-small: 0.8125rem;
+  --t-micro: 0.6875rem;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(74, 22, 51, 0.04), 0 8px 24px rgba(74, 22, 51, 0.06);
+  --ease: 160ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; line-height: 1.2; }
+h1 { font-size: var(--t-display); letter-spacing: -0.02em; }
+h2 { font-size: var(--t-title); }
+h3 { font-size: var(--t-body); font-family: var(--font-body); font-weight: 600; }
+a { color: var(--burgundy); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- shell --------------------------------------------------------------- */
+
+.shell { max-width: 1080px; margin: 0 auto; padding: 0 var(--s5) var(--s8); }
+
+.topbar {
+  display: flex; align-items: center; gap: var(--s5);
+  padding: var(--s4) var(--s5);
+  max-width: 1080px; margin: 0 auto;
+}
+.brand {
+  font-family: var(--font-display); font-size: 1.0625rem; font-weight: 600;
+  color: var(--burgundy-deep); text-decoration: none; margin-right: auto;
+}
+.nav { display: flex; gap: var(--s1); align-items: center; }
+.nav a {
+  padding: var(--s2) var(--s3); border-radius: var(--radius-sm);
+  color: var(--muted); font-size: var(--t-small); font-weight: 500;
+  text-decoration: none; transition: background var(--ease), color var(--ease);
+}
+.nav a:hover { background: var(--burgundy-wash); color: var(--burgundy); text-decoration: none; }
+.nav a[aria-current='page'] { background: var(--burgundy-wash); color: var(--burgundy); }
+
+.page-head {
+  display: flex; align-items: flex-end; gap: var(--s4);
+  margin: var(--s6) 0 var(--s5);
+}
+.page-head p { margin: var(--s1) 0 0; color: var(--muted); font-size: var(--t-small); }
+.page-head .spacer { margin-left: auto; }
+
+/* --- surfaces ------------------------------------------------------------ */
+
+.card {
+  background: var(--paper-card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: var(--s5);
+}
+.grid { display: grid; gap: var(--s4); }
+.grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.stack { display: flex; flex-direction: column; gap: var(--s4); }
+.row { display: flex; align-items: center; gap: var(--s3); }
+.row .spacer { margin-left: auto; }
+
+/* --- type helpers -------------------------------------------------------- */
+
+.label {
+  font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+}
+.muted { color: var(--muted); }
+.small { font-size: var(--t-small); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.metric { font-family: var(--font-display); font-size: var(--t-display); line-height: 1; }
+
+/* --- buttons ------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s4); border-radius: var(--radius-sm);
+  border: 1px solid transparent; background: var(--burgundy); color: #fff;
+  font: inherit; font-size: var(--t-small); font-weight: 500;
+  cursor: pointer; text-decoration: none;
+  transition: background var(--ease), border-color var(--ease);
+}
+.btn:hover { background: var(--burgundy-deep); text-decoration: none; }
+.btn.ghost { background: transparent; border-color: var(--hairline); color: var(--burgundy); }
+.btn.ghost:hover { background: var(--burgundy-wash); }
+.btn.danger { background: var(--risk); }
+
+/* --- pills --------------------------------------------------------------- */
+
+.pill {
+  display: inline-flex; align-items: center; gap: var(--s1);
+  padding: 2px var(--s2); border-radius: 999px;
+  font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.04em;
+  background: var(--burgundy-wash); color: var(--burgundy);
+}
+.pill.ok { background: var(--ok-wash); color: var(--ok); }
+.pill.warn { background: var(--warn-wash); color: var(--warn); }
+.pill.risk { background: var(--risk-wash); color: var(--risk); }
+
+/* --- tables -------------------------------------------------------------- */
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: var(--s2) var(--s3);
+  font-size: var(--t-micro); font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--hairline);
+}
+td { padding: var(--s3); border-bottom: 1px solid var(--hairline); }
+tr:last-child td { border-bottom: none; }
+.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* --- forms --------------------------------------------------------------- */
+
+input, select, textarea {
+  width: 100%; padding: var(--s2) var(--s3);
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  background: var(--paper-card); color: var(--ink);
+  font: inherit; font-size: var(--t-small);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--burgundy);
+  box-shadow: 0 0 0 3px var(--burgundy-wash);
+}
+input[type='checkbox'] { width: auto; }
+.field { display: flex; flex-direction: column; gap: var(--s1); margin-bottom: var(--s4); }
+.field > label { font-size: var(--t-small); font-weight: 500; }
+.field .helptext, .field .errorlist {
+  font-size: var(--t-micro); color: var(--muted); margin: 0; padding: 0; list-style: none;
+}
+.field .errorlist { color: var(--risk); }
+.score-input { width: 72px; text-align: right; font-family: var(--font-mono); }
+
+/* --- progress ------------------------------------------------------------ */
+
+.meter { height: 6px; border-radius: 999px; background: var(--paper-sunk); overflow: hidden; }
+.meter > span { display: block; height: 100%; border-radius: 999px; background: var(--burgundy); }
+
+/* --- empty states -------------------------------------------------------- */
+
+.empty { text-align: center; padding: var(--s7) var(--s5); }
+.empty .mark {
+  font-family: var(--font-display); font-size: 2.5rem;
+  color: var(--burgundy); opacity: 0.28; margin-bottom: var(--s3);
+}
+.empty h2 { margin-bottom: var(--s2); }
+.empty p { color: var(--muted); max-width: 42ch; margin: 0 auto var(--s5); }
+
+@media (max-width: 640px) {
+  :root { --t-display: 1.75rem; }
+  .topbar { flex-wrap: wrap; gap: var(--s3); }
+  .shell { padding: 0 var(--s4) var(--s7); }
+}

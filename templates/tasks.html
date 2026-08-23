@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Tasks — Student Compass{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div><h1>Tasks</h1><p>What's open, in the order it's due</p></div>
+  <span class="spacer"></span>
+  <a class="btn" href="{% url 'add_task' %}">Add task</a>
+</div>
+
+{% if open_tasks or closed_tasks %}
+  <section class="card">
+    <h2 style="margin-bottom:var(--s4)">Open</h2>
+    {% if open_tasks %}
+      <table>
+        <thead>
+          <tr><th>Task</th><th>Course</th><th>Status</th><th>Priority</th><th class="num">Due</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for t in open_tasks %}
+            <tr>
+              <td>{{ t.title }}</td>
+              <td class="small muted">{% if t.enrollment %}{{ t.enrollment.course.code }}{% else %}—{% endif %}</td>
+              <td><span class="pill">{{ t.get_status_display }}</span></td>
+              <td class="small muted">{{ t.get_priority_display }}</td>
+              <td class="num small {% if t.due_at and t.due_at < now %}mono{% endif %}">
+                {% if t.due_at %}{{ t.due_at|date:"j M, H:i" }}{% else %}—{% endif %}
+              </td>
+              <td class="num"><a class="small" href="{% url 'edit_task' t.id %}">Edit</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="small muted">Nothing open right now.</p>
+    {% endif %}
+  </section>
+
+  {% if closed_tasks %}
+    <section class="card" style="margin-top:var(--s4)">
+      <h2 style="margin-bottom:var(--s4)">Recently closed</h2>
+      <table>
+        <tbody>
+          {% for t in closed_tasks %}
+            <tr>
+              <td class="muted">{{ t.title }}</td>
+              <td class="small muted">{% if t.enrollment %}{{ t.enrollment.course.code }}{% endif %}</td>
+              <td><span class="pill {% if t.status == 'done' %}ok{% else %}risk{% endif %}">{{ t.get_status_display }}</span></td>
+              <td class="num small muted">{{ t.updated_at|date:"j M" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+{% else %}
+  <div class="card empty">
+    <div class="mark">✎</div>
+    <h2>No tasks yet</h2>
+    <p>Add the work you're carrying — readings, labs, problem sets — and Compass will keep them ordered by what's due next.</p>
+    <a class="btn" href="{% url 'add_task' %}">Add your first task</a>
+  </div>
+{% endif %}
+
+{% endblock %}

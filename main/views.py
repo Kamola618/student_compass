@@ -1,143 +1,180 @@
-from django.shortcuts import render
-from .models import *
-from django.shortcuts import render, redirect
-from .forms import AssignmentForm, CourseForm
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-
-
-def dashboard(request):
-    return render(request, 'dashboard.html')
-
-def courses(request):
-    courses = Course.objects.all()
-    return render(request, 'courses.html', {'courses': courses})
-
+from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-def assignments(request):
-    if request.method == 'POST':
-        for key, value in request.POST.items():
-            if key.startswith('score_') and value != '':
-                aid = key.replace('score_', '')
-                a = Assignment.objects.filter(id=aid).first()
-                if a:
-                    a.score = float(value)
-                    a.save()
-        return redirect('assignments')
+from .forms import AssessmentForm, EnrollmentForm, NoteForm, TaskForm
+from .models import Assessment, Enrollment, Score, Task
 
-    now = timezone.now()
-    upcoming = Assignment.objects.filter(due_date__gte=now).order_by('due_date')
-    completed = Assignment.objects.filter(due_date__lt=now).order_by('-due_date')
-    return render(request, 'assignments.html', {'upcoming': upcoming, 'completed': completed})
 
-def add_assignment(request):
-    if request.method == 'POST':
-        form = AssignmentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('assignments')
-    else:
-        form = AssignmentForm()
-    return render(request, 'add_assignment.html', {'form': form})
+def _enrollments_for(user):
+    """Every enrollment the user owns, with the rows the grade engine needs."""
+    return (
+        Enrollment.objects
+        .filter(user=user)
+        .select_related('course', 'semester')
+        .prefetch_related('course__prerequisites')
+        .prefetch_related(
+            Prefetch('assessments', queryset=Assessment.objects.select_related('score')),
+            'assessments__tasks',
+        )
+    )
 
-def edit_assignment(request, id):
-    assignment = get_object_or_404(Assignment, id=id)
-    if request.method == 'POST':
-        form = AssignmentForm(request.POST, instance=assignment)
-        if form.is_valid():
-            form.save()
-            return redirect('assignments')
-    else:
-        form = AssignmentForm(instance=assignment)
-    return render(request, 'add_assignment.html', {'form': form})
 
-def delete_assignment(request, id):
-    assignment = get_object_or_404(Assignment, id=id)
-    if request.method == 'POST':
-        assignment.delete()
-        return redirect('assignments')
-    return render(request, 'delete_assignment.html', {'assignment': assignment})
+@login_required
+def dashboard(request):
+    enrollments = list(_enrollments_for(request.user))
+    open_tasks = (
+        Task.objects
+        .filter(user=request.user, due_at__isnull=False)
+        .exclude(status__in=[Task.Status.DONE, Task.Status.ARCHIVED, Task.Status.MISSED])
+        .select_related('enrollment__course')
+        .order_by('due_at')[:5]
+    )
 
+    graded = [e for e in enrollments if e.has_any_grade()]
+    credits = sum(e.course.credits for e in graded)
+    weighted_gpa = (
+        round(sum(e.projected_gpa() * e.course.credits for e in graded) / credits, 2)
+        if credits else None
+    )
+
+    return render(request, 'dashboard.html', {
+        'enrollments': enrollments,
+        'open_tasks': open_tasks,
+        'semester_gpa': weighted_gpa,
+        'now': timezone.now(),
+    })
+
+
+@login_required
+def courses(request):
+    return render(request, 'courses.html', {'enrollments': _enrollments_for(request.user)})
+
+
+@login_required
 def add_course(request):
     if request.method == 'POST':
-        form = CourseForm(request.POST)
+        form = EnrollmentForm(request.POST)
         if form.is_valid():
-            form.save()
+            enrollment = form.save(commit=False)
+            enrollment.user = request.user
+            enrollment.save()
             return redirect('courses')
     else:
-        form = CourseForm()
+        form = EnrollmentForm()
     return render(request, 'add_course.html', {'form': form})
 
-def grades(request):
-    grades = Grade.objects.select_related('course').all()
-    results = []
-    for g in grades:
-        raw = request.GET.get(f'target_{g.id}')
-        try:
-            target = float(raw) if raw else 70
-        except ValueError:
-            target = 70
-        results.append({
-            'grade': g,
-            'target_raw': raw or '',
-            'status': g.target_status(target),
-        })
-
-    
-    return render(request, 'grades.html', {'results': results})
-
-from .forms import AssignmentForm, CourseForm, GradeForm
-
-def edit_grade(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    grade, created = Grade.objects.get_or_create(course=course)
-    if request.method == 'POST':
-        form = GradeForm(request.POST, instance=grade)
-        if form.is_valid():
-            form.save()
-            return redirect('grades')
-    else:
-        form = GradeForm(instance=grade)
-    return render(request, 'edit_grade.html', {'form': form, 'course': course})
-
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def grades(request):
+    """Grade table plus the target calculator, per enrollment."""
     if request.method == 'POST':
-        for key, value in request.POST.items():
-            if key.startswith('score_') and value:
-                sg_id = key.replace('score_', '')
-                sg = StudentGrade.objects.filter(id=sg_id, user=request.user).first()
-                if sg:
-                    sg.score = float(value)
-                    sg.save()
+        _save_scores(request)
         return redirect('grades')
 
-    courses = Course.objects.all()
     results = []
-    for course in courses:
-        rows = []
-        for a in course.assessments.all():
-            if not a.auto_calculated:
-                sg, _ = StudentGrade.objects.get_or_create(assessment=a, user=request.user)
-            else:
-                sg = None
-            rows.append({'assessment': a, 'grade': sg, 'score': course.score_for(a, request.user)})
-
-        target_raw = request.GET.get(f'target_{course.id}')
-        try:
-            target = float(target_raw) if target_raw else 70
-        except ValueError:
-            target = 70
-
+    for enrollment in _enrollments_for(request.user):
+        rows = [
+            {'assessment': a, 'percent': enrollment.score_percent(a)}
+            for a in enrollment.assessments.all()
+        ]
+        target = _requested_target(request, enrollment)
         results.append({
-            'course': course, 'rows': rows,
-            'total': course.total_for(request.user),
-            'letter': course.letter_for(request.user),
-            'gpa': course.gpa_for(request.user),
-            'target_raw': target_raw or '',
-            'status': course.target_status_for(request.user, target),
+            'enrollment': enrollment,
+            'rows': rows,
+            'total': enrollment.total(),
+            'projected': enrollment.projected_total(),
+            'letter': enrollment.letter(),
+            'gpa': enrollment.gpa(),
+            'projected_letter': enrollment.projected_letter(),
+            'projected_gpa': enrollment.projected_gpa(),
+            'target': target,
+            'status': enrollment.target_status(target),
         })
     return render(request, 'grades.html', {'results': results})
+
+
+def _requested_target(request, enrollment):
+    """Target from the query string, falling back to the enrollment's own."""
+    raw = request.GET.get(f'target_{enrollment.id}')
+    try:
+        return float(raw) if raw else enrollment.target_score
+    except ValueError:
+        return enrollment.target_score
+
+
+def _save_scores(request):
+    """Persist score_<assessment_id> fields, ignoring assessments not owned by the user."""
+    owned = {
+        a.id: a for a in Assessment.objects.filter(enrollment__user=request.user)
+    }
+    for key, value in request.POST.items():
+        if not key.startswith('score_'):
+            continue
+        try:
+            assessment = owned[int(key.removeprefix('score_'))]
+        except (ValueError, KeyError):
+            continue
+        score, _ = Score.objects.get_or_create(assessment=assessment)
+        if value == '':
+            score.obtained = None
+        else:
+            try:
+                score.obtained = float(value)
+            except ValueError:
+                continue
+        score.graded_at = timezone.now() if score.obtained is not None else None
+        score.save()
+
+
+@login_required
+def tasks(request):
+    owned = Task.objects.filter(user=request.user).select_related('enrollment__course')
+    now = timezone.now()
+    return render(request, 'tasks.html', {
+        'open_tasks': owned.exclude(
+            status__in=[Task.Status.DONE, Task.Status.ARCHIVED, Task.Status.MISSED],
+        ).order_by('due_at'),
+        'closed_tasks': owned.filter(
+            status__in=[Task.Status.DONE, Task.Status.MISSED],
+        ).order_by('-updated_at')[:20],
+        'statuses': Task.Status.choices,
+        'now': now,
+    })
+
+
+@login_required
+def add_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST, user=request.user)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+            return redirect('tasks')
+    else:
+        form = TaskForm(user=request.user)
+    return render(request, 'task_form.html', {'form': form, 'mode': 'add'})
+
+
+@login_required
+def edit_task(request, id):
+    task = get_object_or_404(Task, id=id, user=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('tasks')
+    else:
+        form = TaskForm(instance=task, user=request.user)
+    return render(request, 'task_form.html', {'form': form, 'mode': 'edit', 'task': task})
+
+
+@login_required
+def delete_task(request, id):
+    task = get_object_or_404(Task, id=id, user=request.user)
+    if request.method == 'POST':
+        task.delete()
+        return redirect('tasks')
+    return render(request, 'task_confirm_delete.html', {'task': task})

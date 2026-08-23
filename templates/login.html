@@ -1,14 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-   <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log in</button>
-</form>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Sign in — Student Compass{% endblock %}
+{% block content %}
+
+<div style="max-width:380px;margin:var(--s8) auto 0">
+  <div style="text-align:center;margin-bottom:var(--s5)">
+    <h1>Student Compass</h1>
+    <p class="muted small">Know where you stand, and what's left to do</p>
+  </div>
+  <div class="card">
+    <form method="post">{% csrf_token %}
+      {% include '_form.html' %}
+      {% if form.non_field_errors %}
+        <p class="small" style="color:var(--risk)">{{ form.non_field_errors|first }}</p>
+      {% endif %}
+      <button class="btn" type="submit" style="width:100%;justify-content:center">Sign in</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

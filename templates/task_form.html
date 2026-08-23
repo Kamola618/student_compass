@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{% if mode == 'edit' %}Edit task{% else %}New task{% endif %} — Student Compass{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div><h1>{% if mode == 'edit' %}Edit task{% else %}New task{% endif %}</h1></div>
+</div>
+
+<div class="card" style="max-width:640px">
+  <form method="post">{% csrf_token %}
+    {% include '_form.html' %}
+    <div class="row">
+      <button class="btn" type="submit">Save</button>
+      <a class="btn ghost" href="{% url 'tasks' %}">Cancel</a>
+      {% if mode == 'edit' %}
+        <span class="spacer"></span>
+        <a class="small" style="color:var(--risk)" href="{% url 'delete_task' task.id %}">Delete</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+{% endblock %}
